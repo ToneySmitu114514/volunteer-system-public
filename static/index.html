@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>福州三中志愿登记系统</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <!-- ============ 登录 ============ -->
+  <div id="login-screen" class="login-screen">
+    <div class="login-card">
+      <img class="login-logo" src="/static/avatar.png" alt="福州三中信息技术部" />
+      <h1>福州三中志愿登记系统</h1>
+      <p class="login-sub">请输入访问口令</p>
+      <input type="password" id="login-pwd" placeholder="访问口令" autocomplete="current-password" />
+      <button class="btn primary" id="login-btn">登录</button>
+      <p class="login-err" id="login-err"></p>
+    </div>
+  </div>
+
+  <header class="topbar">
+    <div class="brand">
+      <a href="https://space.bilibili.com/3747560795671136" target="_blank" rel="noopener" class="logo-link" title="福州三中信息技术部 · B站">
+        <img class="logo" src="/static/avatar.png" alt="福州三中信息技术部" />
+      </a>
+      <div>
+        <h1>福州三中志愿登记系统</h1>
+      </div>
+    </div>
+    <nav class="tabs" id="tabs">
+      <button class="tab active" data-view="dashboard">仪表盘</button>
+      <button class="tab" data-view="tasks">任务管理</button>
+      <button class="tab" data-view="members">成员管理</button>
+      <button class="tab" data-view="hours">时长统计</button>
+    </nav>
+    <div class="topbar-actions">
+      <button class="btn ghost small" id="btn-pwd">修改口令</button>
+      <button class="btn ghost small" id="btn-logout">退出登录</button>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- ============ 仪表盘 ============ -->
+    <section class="view active" id="view-dashboard">
+      <div class="stat-grid" id="stat-cards"></div>
+
+      <div class="panel-row">
+        <div class="panel">
+          <div class="panel-head"><h2>各成员志愿时长</h2><span class="hint">按规则分配后汇总</span></div>
+          <div id="chart-member-hours" class="chart-box"></div>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><h2>每月登记时长趋势</h2><span class="hint">按任务日期统计</span></div>
+          <div id="chart-timeline" class="chart-box"></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head"><h2>最近登记任务</h2></div>
+        <div id="recent-tasks" class="recent-list"></div>
+      </div>
+    </section>
+
+    <!-- ============ 任务管理 ============ -->
+    <section class="view" id="view-tasks">
+      <div class="toolbar">
+        <input type="search" id="task-search" placeholder="搜索任务标题 / 内容…" />
+        <select id="task-filter-status">
+          <option value="">全部状态</option>
+          <option value="待开始">待开始</option>
+          <option value="进行中">进行中</option>
+          <option value="已完成">已完成</option>
+        </select>
+        <select id="task-filter-member"><option value="">全部成员</option></select>
+        <button class="btn primary" id="btn-add-task">+ 新增任务</button>
+      </div>
+      <div class="table-wrap">
+        <table class="data-table" id="task-table">
+          <thead>
+            <tr>
+              <th>标题</th><th>任务日期</th><th>参与人数</th>
+              <th>志愿时长(h)</th><th>分配规则</th><th>状态</th><th>操作</th>
+            </tr>
+          </thead>
+          <tbody id="task-tbody"></tbody>
+        </table>
+      </div>
+      <p class="empty-hint" id="task-empty" hidden>暂无任务，点击「新增任务」开始登记。</p>
+    </section>
+
+    <!-- ============ 成员管理 ============ -->
+    <section class="view" id="view-members">
+      <div class="toolbar">
+        <input type="text" id="member-name" placeholder="成员姓名" />
+        <input type="text" id="member-sid" placeholder="学籍辅号（可选）" />
+        <input type="text" id="member-note" placeholder="备注（可选）" />
+        <button class="btn primary" id="btn-add-member">+ 添加成员</button>
+      </div>
+      <div class="table-wrap">
+        <table class="data-table" id="member-table">
+          <thead>
+            <tr><th>姓名</th><th>学籍辅号</th><th>备注</th><th>操作</th></tr>
+          </thead>
+          <tbody id="member-tbody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ============ 时长统计 ============ -->
+    <section class="view" id="view-hours">
+      <div class="toolbar">
+        <label>选择成员：</label>
+        <select id="hours-member-select"><option value="">— 请选择 —</option></select>
+        <button class="btn primary" id="btn-view-hours">查看明细</button>
+      </div>
+      <div class="panel" id="hours-detail-panel" hidden>
+        <div class="panel-head">
+          <h2 id="hours-detail-title">成员时长明细</h2>
+          <span class="hint" id="hours-detail-total"></span>
+        </div>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead><tr><th>任务</th><th>日期</th><th>分配规则</th><th>获得时长(h)</th></tr></thead>
+            <tbody id="hours-detail-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head"><h2>成员时长排行榜</h2><span class="hint">按分配后总时长降序</span></div>
+        <div id="hours-ranking-chart" class="chart-box"></div>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead><tr><th>排名</th><th>成员</th><th>参与任务数</th><th>总时长(h)</th></tr></thead>
+            <tbody id="hours-ranking-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ============ 任务模态框 ============ -->
+  <div class="modal-mask" id="task-modal" hidden>
+    <div class="modal">
+      <div class="modal-head">
+        <h2 id="task-modal-title">新增任务</h2>
+        <button class="modal-close" id="task-modal-close">×</button>
+      </div>
+      <form id="task-form" class="form-grid">
+        <input type="hidden" id="f-id" />
+        <label>任务标题 *<input type="text" id="f-title" required /></label>
+        <label>任务日期<input type="date" id="f-date" /></label>
+        <label>开始时间<input type="time" id="f-start" /></label>
+        <label>结束时间<input type="time" id="f-end" /></label>
+        <label>志愿时长 (小时) *<input type="number" id="f-hours" step="0.5" min="0" value="0" required /></label>
+        <label>分配规则
+          <select id="f-rule">
+            <option value="equal">平均分配（时长÷人数）</option>
+            <option value="full">全员计满（每人记满总时长）</option>
+          </select>
+        </label>
+        <label>状态
+          <select id="f-status">
+            <option>已完成</option><option>进行中</option><option>待开始</option>
+          </select>
+        </label>
+        <label>地点<input type="text" id="f-location" /></label>
+        <label class="full">任务内容<textarea id="f-content" rows="3"></textarea></label>
+        <div class="full">
+          <span class="field-label">参与成员</span>
+          <div class="member-checklist" id="member-checklist"></div>
+        </div>
+        <div class="form-actions full">
+          <button type="submit" class="btn primary">保存</button>
+          <button type="button" class="btn ghost" id="task-modal-cancel">取消</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ============ 任务详情模态框 ============ -->
+  <div class="modal-mask" id="detail-modal" hidden>
+    <div class="modal">
+      <div class="modal-head">
+        <h2 id="detail-title">任务详情</h2>
+        <button class="modal-close" id="detail-close">×</button>
+      </div>
+      <div id="detail-body" class="detail-body"></div>
+      <div class="form-actions">
+        <button class="btn ghost" id="detail-close2">关闭</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-mask" id="pwd-modal" hidden>
+    <div class="modal">
+      <div class="modal-head">
+        <h2>修改访问口令</h2>
+        <button class="modal-close" id="pwd-modal-close">×</button>
+      </div>
+      <form id="pwd-form" class="form-grid">
+        <label class="full">当前口令<input type="password" id="pwd-old" autocomplete="current-password" required /></label>
+        <label class="full">新口令（至少 6 位）<input type="password" id="pwd-new" autocomplete="new-password" required /></label>
+        <label class="full">确认新口令<input type="password" id="pwd-confirm" autocomplete="new-password" required /></label>
+        <p class="pwd-tip full">修改后立即生效，重启服务也保持；口令以加盐哈希存储，不保存明文。</p>
+        <div class="form-actions full">
+          <button type="submit" class="btn primary">确认修改</button>
+          <button type="button" class="btn ghost" id="pwd-modal-cancel">取消</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="toast" class="toast" hidden></div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
